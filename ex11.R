@@ -5,6 +5,7 @@ library(naniar)
 library(cowplot)
 library(ggplot2)
 library(MASS)
+library(MuMIn)
 
 f <- "https://raw.githubusercontent.com/difiore/ada-datasets/main/Mammal_lifehistories_v2.txt"
 d <- read_tsv(f)
@@ -19,8 +20,8 @@ d <- d |>
 #Step 2: Drop litter size and refs
 names(d)
 d <- d |>
-  select(order, family, Genus, species, `mass(g)`, `gestation(mo)`, `newborn(g)`,
-         `weaning(mo)`, `wean mass(g)`, `AFR(mo)`, `max. life(mo)`, `litters/year`)
+  dplyr::select(c(order, family, Genus, species, `mass(g)`, `gestation(mo)`, `newborn(g)`,
+                  `weaning(mo)`, `wean mass(g)`, `AFR(mo)`, `max. life(mo)`, `litters/year`))
 
 #Step 3, log transform all numeric variables
 d <- d |>
@@ -40,6 +41,10 @@ relLife <- lm(data = d, `max. life(mo)` ~ `mass(g)`, na.action = na.exclude) #Ma
 relNewbornMass <- lm(data = d, `newborn(g)` ~ `mass(g)`, na.action = na.exclude) #Newborn mass
 relWeaningMass <- lm(data = d, `wean mass(g)` ~ `mass(g)`, na.action = na.exclude) #Weaning mass
 
+d <- d |>
+  mutate(relGest = relGest$residuals, relWean = relWean$residuals, relAFR = relAFR$residuals, 
+         relLife = relLife$residuals, relNewbornMass = relNewbornMass$residuals, relWeaningMass = relWeaningMass$residuals)
+
 #Step 5, plotting residules
 lifeOrder <- ggplot(data = d, mapping = aes(x = Order, y = relLife)) +
   geom_boxplot() +
@@ -56,14 +61,20 @@ weanmassOrder <- ggplot(data = d, mapping = aes(x = Order, y = relWeaningMass)) 
 plot_grid(lifeOrder, newmassOrder, weanmassOrder)
 
 #Step 6, model selection
+d <- d |>
+  drop_na(`max. life(mo)`, `gestation(mo)`, `newborn(g)`, `weaning(mo)`, `wean mass(g)`, `litters/year`, `mass(g)`)
 
 #Max life(mo) models
 lifeFull <- lm(data = d, `max. life(mo)` ~ `gestation(mo)` + `newborn(g)` + 
-                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`)
+                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`, na.action = na.fail)
 summary(lifeFull)
 
 lifeTest <- stepAIC(lifeFull, scope = .~., direction = "both")
 
+lfMods <- dredge(lifeFull)
+lfModsAvg <- summary(model.avg(lfMods, subset = delta <= 4, fit = TRUE))
+plot(lfModsAvg)
+lfCI <- confint(lfModsAvg)
 #AFR(mo) models
 AFRFull <- lm(data = d, `AFR(mo)` ~ `gestation(mo)` + `newborn(g)` + 
                  `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`)
