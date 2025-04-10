@@ -28,7 +28,8 @@ d <- d |>
   mutate(`mass(g)` = log(`mass(g)`), `gestation(mo)` = log(`gestation(mo)`), 
          `newborn(g)` = log(`newborn(g)`), `weaning(mo)` = log(`weaning(mo)`),
          `wean mass(g)` = log(`wean mass(g)`), `AFR(mo)` = log(`AFR(mo)`),
-         `max. life(mo)` = log(`max. life(mo)`), `litters/year` = log(`litters/year`))
+         `max. life(mo)` = log(`max. life(mo)`), `litters/year` = log(`litters/year`)) |>
+  drop_na(`gestation(mo)`, `weaning(mo)`, `AFR(mo)`, `max. life(mo)`, `newborn(g)`, `wean mass(g)`)
 
 #Step 4, Regress values to get relative values
 #Age values
@@ -46,23 +47,26 @@ d <- d |>
          relLife = relLife$residuals, relNewbornMass = relNewbornMass$residuals, relWeaningMass = relWeaningMass$residuals)
 
 #Step 5, plotting residules
-lifeOrder <- ggplot(data = d, mapping = aes(x = Order, y = relLife)) +
+lifeOrder <- ggplot(data = d, mapping = aes(x = order, y = relLife)) +
   geom_boxplot() +
-  ggtitle("Order and Lifespan")
+  ggtitle("Order and Lifespan") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-newmassOrder <- ggplot(data = d, mapping = aes(x = Order, y = relNewbornMass)) +
+newmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relNewbornMass)) +
   geom_boxplot() +
-  ggtitle("Order and Newborn Mass(g)")
+  ggtitle("Order and Newborn Mass(g)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-weanmassOrder <- ggplot(data = d, mapping = aes(x = Order, y = relWeaningMass)) +
+weanmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relWeaningMass)) +
   geom_boxplot() +
-  ggtitle("Order and Weaning Mass")
+  ggtitle("Order and Weaning Mass") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 plot_grid(lifeOrder, newmassOrder, weanmassOrder)
 
 #Step 6, model selection
 d <- d |>
-  drop_na(`max. life(mo)`, `gestation(mo)`, `newborn(g)`, `weaning(mo)`, `wean mass(g)`, `litters/year`, `mass(g)`)
+  drop_na(`litters/year`, `mass(g)`)
 
 #Max life(mo) models
 lifeFull <- lm(data = d, `max. life(mo)` ~ `gestation(mo)` + `newborn(g)` + 
@@ -75,13 +79,14 @@ lfMods <- dredge(lifeFull)
 lfModsAvg <- summary(model.avg(lfMods, subset = delta <= 4, fit = TRUE))
 plot(lfModsAvg)
 lfCI <- confint(lfModsAvg)
+
 #AFR(mo) models
 AFRFull <- lm(data = d, `AFR(mo)` ~ `gestation(mo)` + `newborn(g)` + 
-                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`)
+                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`, na.action = na.fail)
 summary(AFRFull)
 
 AFRTest <- stepAIC(AFRFull, scope = .~., direction = "both")
 
-
-
-
+AFRmods <- dredge(AFRFull)
+AFRavg <- summary(model.avg(AFRmods, subset = delta <= 4, fit = TRUE))
+plot(AFRavg)

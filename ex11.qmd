@@ -7,6 +7,8 @@ editor: visual
 ## Initial Set Up
 
 ```{r}
+#| message: false
+#| warning: false
 #Loading in libraries and data
 library(tidyverse)
 library(skimr)
@@ -14,6 +16,7 @@ library(naniar)
 library(cowplot)
 library(ggplot2)
 library(MASS)
+library(MuMIn)
 
 f <- "https://raw.githubusercontent.com/difiore/ada-datasets/main/Mammal_lifehistories_v2.txt"
 d <- read_tsv(f)
@@ -25,6 +28,8 @@ skim(d) #Categorical data: order, family, Genus, species
 ## Step 1
 
 ```{r}
+#| message: false
+#| warning: false
 d <- d |>
   replace_with_na_all(condition = ~.x == -999)
 ```
@@ -32,14 +37,18 @@ d <- d |>
 ## Step 2
 
 ```{r}
+#| message: false
+#| warning: false
 d <- d |>
-  select(order, family, Genus, species, `mass(g)`, `gestation(mo)`, `newborn(g)`,
+  dplyr::select(order, family, Genus, species, `mass(g)`, `gestation(mo)`, `newborn(g)`,
          `weaning(mo)`, `wean mass(g)`, `AFR(mo)`, `max. life(mo)`, `litters/year`)
 ```
 
 ## Step 3
 
 ```{r}
+#| message: false
+#| warning: false
 d <- d |>
   mutate(`mass(g)` = log(`mass(g)`), `gestation(mo)` = log(`gestation(mo)`), 
          `newborn(g)` = log(`newborn(g)`), `weaning(mo)` = log(`weaning(mo)`),
@@ -50,6 +59,10 @@ d <- d |>
 ## Step 4
 
 ```{r}
+#| message: false
+#| warning: false
+d <- d |>
+  drop_na(`gestation(mo)`, `weaning(mo)`, `AFR(mo)`, `max. life(mo)`, `newborn(g)`, `wean mass(g)`)
 #Age values
 relGest <- lm(data = d, `gestation(mo)` ~ `mass(g)`, na.action = na.exclude) #Gestation
 relWean <- lm(data = d, `weaning(mo)` ~ `mass(g)`, na.action = na.exclude) #weaning
@@ -61,22 +74,30 @@ relNewbornMass <- lm(data = d, `newborn(g)` ~ `mass(g)`, na.action = na.exclude)
 relWeaningMass <- lm(data = d, `wean mass(g)` ~ `mass(g)`, na.action = na.exclude) #Weaning mass
 
 #Adding to original data frame
+d <- d |>
+  mutate(relGest = relGest$residuals, relWean = relWean$residuals, relAFR = relAFR$residuals, 
+         relLife = relLife$residuals, relNewbornMass = relNewbornMass$residuals, relWeaningMass = relWeaningMass$residuals)
 ```
 
 ## Step 5
 
 ```{r}
-lifeOrder <- ggplot(data = d, mapping = aes(x = Order, y = relLife)) +
+#| message: false
+#| warning: false
+lifeOrder <- ggplot(data = d, mapping = aes(x = order, y = relLife)) +
   geom_boxplot() +
-  ggtitle("Order and Lifespan")
+  ggtitle("Order and Lifespan") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-newmassOrder <- ggplot(data = d, mapping = aes(x = Order, y = relNewbornMass)) +
+newmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relNewbornMass)) +
   geom_boxplot() +
-  ggtitle("Order and Newborn Mass(g)")
+  ggtitle("Order and Newborn Mass(g)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-weanmassOrder <- ggplot(data = d, mapping = aes(x = Order, y = relWeaningMass)) +
+weanmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relWeaningMass)) +
   geom_boxplot() +
-  ggtitle("Order and Weaning Mass")
+  ggtitle("Order and Weaning Mass") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 plot_grid(lifeOrder, newmassOrder, weanmassOrder)
 ```
@@ -84,17 +105,33 @@ plot_grid(lifeOrder, newmassOrder, weanmassOrder)
 ## Step 6
 
 ```{r}
+#| message: false
+#| warning: false
+d <- d |>
+  drop_na(`litters/year`, `mass(g)`)
+
 #Max life(mo) models
 lifeFull <- lm(data = d, `max. life(mo)` ~ `gestation(mo)` + `newborn(g)` + 
-                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`)
+                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`, na.action = na.fail)
 summary(lifeFull)
 
 lifeTest <- stepAIC(lifeFull, scope = .~., direction = "both")
+lifeTest
+
+lfMods <- dredge(lifeFull)
+lfModsAvg <- summary(model.avg(lfMods, subset = delta <= 4, fit = TRUE))
+plot(lfModsAvg)
+lfCI <- confint(lfModsAvg)
 
 #AFR(mo) models
 AFRFull <- lm(data = d, `AFR(mo)` ~ `gestation(mo)` + `newborn(g)` + 
-                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`)
+                 `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`, na.action = na.fail)
 summary(AFRFull)
 
 AFRTest <- stepAIC(AFRFull, scope = .~., direction = "both")
+AFRTest
+
+AFRmods <- dredge(AFRFull)
+AFRavg <- summary(model.avg(AFRmods, subset = delta <= 4, fit = TRUE))
+plot(AFRavg)
 ```
