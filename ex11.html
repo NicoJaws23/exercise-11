@@ -71,10 +71,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#practice-model-selection" id="toc-practice-model-selection" class="nav-link active" data-scroll-target="#practice-model-selection">Practice Model Selection</a>
+  <ul class="collapse">
+  <li><a href="#initial-set-up" id="toc-initial-set-up" class="nav-link" data-scroll-target="#initial-set-up">Initial Set Up</a></li>
+  <li><a href="#step-1" id="toc-step-1" class="nav-link" data-scroll-target="#step-1">Step 1</a></li>
+  <li><a href="#step-2" id="toc-step-2" class="nav-link" data-scroll-target="#step-2">Step 2</a></li>
+  <li><a href="#step-3" id="toc-step-3" class="nav-link" data-scroll-target="#step-3">Step 3</a></li>
+  <li><a href="#step-4" id="toc-step-4" class="nav-link" data-scroll-target="#step-4">Step 4</a></li>
+  <li><a href="#step-5" id="toc-step-5" class="nav-link" data-scroll-target="#step-5">Step 5</a></li>
+  <li><a href="#step-6" id="toc-step-6" class="nav-link" data-scroll-target="#step-6">Step 6</a>
+  <ul class="collapse">
+  <li><a href="#predicting-max.-lifemo" id="toc-predicting-max.-lifemo" class="nav-link" data-scroll-target="#predicting-max.-lifemo">Predicting max. life(mo)</a></li>
+  <li><a href="#predicting-afrmo" id="toc-predicting-afrmo" class="nav-link" data-scroll-target="#predicting-afrmo">Predicting AFR(mo)</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -96,8 +117,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="practice-model-selection" class="level1">
+<h1>Practice Model Selection</h1>
+<p>In this exercise I will use a mammal life history data set to run and test the strength of different linear models.</p>
 <section id="initial-set-up" class="level2">
 <h2 class="anchored" data-anchor-id="initial-set-up">Initial Set Up</h2>
+<p>First I need to load in the libraries containing the tools needed to run the analysis. I will also load in and examine the data. The data has 14 different variables. Of them, order, family, Genus, and species are categorical variables. The numeric variables are mass(g), gestation(mo), newborn(g), weaning(mo), wean mass(g), AFR(mo), max. life(mo), litt size, litter/year, and refs</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Loading in libraries and data</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
@@ -110,7 +135,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="st">"https://raw.githubusercontent.com/difiore/ada-datasets/main/Mammal_lifehistories_v2.txt"</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(f)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d) <span class="co">#Categorical data: order, family, Genus, species</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Data summary</caption>
@@ -384,75 +409,1174 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Numeric data: mass(g), gestation(mo), newborn(g), weaning(mo), wean mass(g), AFR(mo), max.life(mo),</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#litter size, litters/year, refs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-1" class="level2">
 <h2 class="anchored" data-anchor-id="step-1">Step 1</h2>
+<p>First I need to replace all the cells with a value of -999 with NA. I will do this using the replace_with_na_all() function from {naniar}.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_with_na_all</span>(<span class="at">condition =</span> <span class="sc">~</span>.x <span class="sc">==</span> <span class="sc">-</span><span class="dv">999</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_with_na_all</span>(<span class="at">condition =</span> <span class="sc">~</span>.x <span class="sc">==</span> <span class="sc">-</span><span class="dv">999</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">d</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">1440</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">14</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">character</td>
+<td style="text-align: left;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">10</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 13%">
+<col style="width: 19%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">empty</th>
+<th style="text-align: right;">n_unique</th>
+<th style="text-align: right;">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">order</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">family</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Genus</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">618</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">species</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1191</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 9%">
+<col style="width: 11%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">mass(g)</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">4.077014e+05</td>
+<td style="text-align: right;">5.210475e+06</td>
+<td style="text-align: right;">2.10</td>
+<td style="text-align: right;">61.15</td>
+<td style="text-align: right;">606.00</td>
+<td style="text-align: right;">8554.00</td>
+<td style="text-align: right;">1.490000e+08</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gestation(mo)</td>
+<td style="text-align: right;">418</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">3.860000e+00</td>
+<td style="text-align: right;">3.620000e+00</td>
+<td style="text-align: right;">0.49</td>
+<td style="text-align: right;">0.99</td>
+<td style="text-align: right;">2.11</td>
+<td style="text-align: right;">6.00</td>
+<td style="text-align: right;">2.146000e+01</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">newborn(g)</td>
+<td style="text-align: right;">595</td>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">1.212655e+04</td>
+<td style="text-align: right;">1.184082e+05</td>
+<td style="text-align: right;">0.21</td>
+<td style="text-align: right;">4.40</td>
+<td style="text-align: right;">43.70</td>
+<td style="text-align: right;">542.50</td>
+<td style="text-align: right;">2.250000e+06</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">weaning(mo)</td>
+<td style="text-align: right;">619</td>
+<td style="text-align: right;">0.57</td>
+<td style="text-align: right;">3.970000e+00</td>
+<td style="text-align: right;">5.380000e+00</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">0.92</td>
+<td style="text-align: right;">1.69</td>
+<td style="text-align: right;">4.84</td>
+<td style="text-align: right;">4.800000e+01</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wean mass(g)</td>
+<td style="text-align: right;">1039</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">6.022050e+04</td>
+<td style="text-align: right;">9.538572e+05</td>
+<td style="text-align: right;">2.09</td>
+<td style="text-align: right;">20.15</td>
+<td style="text-align: right;">102.60</td>
+<td style="text-align: right;">2000.00</td>
+<td style="text-align: right;">1.907500e+07</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AFR(mo)</td>
+<td style="text-align: right;">607</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">2.244000e+01</td>
+<td style="text-align: right;">2.645000e+01</td>
+<td style="text-align: right;">0.70</td>
+<td style="text-align: right;">4.50</td>
+<td style="text-align: right;">12.00</td>
+<td style="text-align: right;">28.24</td>
+<td style="text-align: right;">2.100000e+02</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">max. life(mo)</td>
+<td style="text-align: right;">841</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">2.240300e+02</td>
+<td style="text-align: right;">1.897400e+02</td>
+<td style="text-align: right;">12.00</td>
+<td style="text-align: right;">84.00</td>
+<td style="text-align: right;">192.00</td>
+<td style="text-align: right;">288.00</td>
+<td style="text-align: right;">1.368000e+03</td>
+<td style="text-align: left;">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">litter size</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">2.800000e+00</td>
+<td style="text-align: right;">1.770000e+00</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.02</td>
+<td style="text-align: right;">2.50</td>
+<td style="text-align: right;">4.00</td>
+<td style="text-align: right;">1.418000e+01</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">litters/year</td>
+<td style="text-align: right;">689</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">1.640000e+00</td>
+<td style="text-align: right;">1.170000e+00</td>
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.00</td>
+<td style="text-align: right;">7.500000e+00</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">refs</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.054762e+12</td>
+<td style="text-align: right;">3.619709e+13</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">116.00</td>
+<td style="text-align: right;">1229.00</td>
+<td style="text-align: right;">1242249.75</td>
+<td style="text-align: right;">1.368101e+15</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 <section id="step-2" class="level2">
 <h2 class="anchored" data-anchor-id="step-2">Step 2</h2>
+<p>Now I will drop the numeric variables litter size and refs by selecting all the variables except for those two.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(order, family, Genus, species, <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(order, family, Genus, species, <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">d</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">1440</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">12</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">character</td>
+<td style="text-align: left;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 13%">
+<col style="width: 19%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">empty</th>
+<th style="text-align: right;">n_unique</th>
+<th style="text-align: right;">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">order</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">family</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Genus</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">618</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">species</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1191</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 9%">
+<col style="width: 13%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">mass(g)</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">407701.39</td>
+<td style="text-align: right;">5210474.99</td>
+<td style="text-align: right;">2.10</td>
+<td style="text-align: right;">61.15</td>
+<td style="text-align: right;">606.00</td>
+<td style="text-align: right;">8554.00</td>
+<td style="text-align: right;">1.4900e+08</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gestation(mo)</td>
+<td style="text-align: right;">418</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">3.86</td>
+<td style="text-align: right;">3.62</td>
+<td style="text-align: right;">0.49</td>
+<td style="text-align: right;">0.99</td>
+<td style="text-align: right;">2.11</td>
+<td style="text-align: right;">6.00</td>
+<td style="text-align: right;">2.1460e+01</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">newborn(g)</td>
+<td style="text-align: right;">595</td>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">12126.55</td>
+<td style="text-align: right;">118408.21</td>
+<td style="text-align: right;">0.21</td>
+<td style="text-align: right;">4.40</td>
+<td style="text-align: right;">43.70</td>
+<td style="text-align: right;">542.50</td>
+<td style="text-align: right;">2.2500e+06</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">weaning(mo)</td>
+<td style="text-align: right;">619</td>
+<td style="text-align: right;">0.57</td>
+<td style="text-align: right;">3.97</td>
+<td style="text-align: right;">5.38</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">0.92</td>
+<td style="text-align: right;">1.69</td>
+<td style="text-align: right;">4.84</td>
+<td style="text-align: right;">4.8000e+01</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wean mass(g)</td>
+<td style="text-align: right;">1039</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">60220.50</td>
+<td style="text-align: right;">953857.17</td>
+<td style="text-align: right;">2.09</td>
+<td style="text-align: right;">20.15</td>
+<td style="text-align: right;">102.60</td>
+<td style="text-align: right;">2000.00</td>
+<td style="text-align: right;">1.9075e+07</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AFR(mo)</td>
+<td style="text-align: right;">607</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">22.44</td>
+<td style="text-align: right;">26.45</td>
+<td style="text-align: right;">0.70</td>
+<td style="text-align: right;">4.50</td>
+<td style="text-align: right;">12.00</td>
+<td style="text-align: right;">28.24</td>
+<td style="text-align: right;">2.1000e+02</td>
+<td style="text-align: left;">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">max. life(mo)</td>
+<td style="text-align: right;">841</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">224.03</td>
+<td style="text-align: right;">189.74</td>
+<td style="text-align: right;">12.00</td>
+<td style="text-align: right;">84.00</td>
+<td style="text-align: right;">192.00</td>
+<td style="text-align: right;">288.00</td>
+<td style="text-align: right;">1.3680e+03</td>
+<td style="text-align: left;">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">litters/year</td>
+<td style="text-align: right;">689</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">1.64</td>
+<td style="text-align: right;">1.17</td>
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.00</td>
+<td style="text-align: right;">7.5000e+00</td>
+<td style="text-align: left;">▇▃▁▁▁</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 <section id="step-3" class="level2">
 <h2 class="anchored" data-anchor-id="step-3">Step 3</h2>
+<p>Next I will log transform all of the numeric variables using the mutate() function.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>), <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>), </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>), <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>),</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>), <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>), <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>), <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>), </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>), <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>), <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>), <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log</span>(<span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">d</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">1440</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">12</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">character</td>
+<td style="text-align: left;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 13%">
+<col style="width: 19%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">empty</th>
+<th style="text-align: right;">n_unique</th>
+<th style="text-align: right;">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">order</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">family</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Genus</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">618</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">species</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1191</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 12%">
+<col style="width: 17%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">mass(g)</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">6.87</td>
+<td style="text-align: right;">3.24</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">4.11</td>
+<td style="text-align: right;">6.41</td>
+<td style="text-align: right;">9.05</td>
+<td style="text-align: right;">18.82</td>
+<td style="text-align: left;">▆▇▆▂▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gestation(mo)</td>
+<td style="text-align: right;">418</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">0.90</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">-0.71</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">1.79</td>
+<td style="text-align: right;">3.07</td>
+<td style="text-align: left;">▇▆▃▇▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">newborn(g)</td>
+<td style="text-align: right;">595</td>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">4.27</td>
+<td style="text-align: right;">3.17</td>
+<td style="text-align: right;">-1.56</td>
+<td style="text-align: right;">1.48</td>
+<td style="text-align: right;">3.78</td>
+<td style="text-align: right;">6.30</td>
+<td style="text-align: right;">14.63</td>
+<td style="text-align: left;">▇▇▆▃▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">weaning(mo)</td>
+<td style="text-align: right;">619</td>
+<td style="text-align: right;">0.57</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">1.04</td>
+<td style="text-align: right;">-1.20</td>
+<td style="text-align: right;">-0.08</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">1.58</td>
+<td style="text-align: right;">3.87</td>
+<td style="text-align: left;">▃▇▅▃▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wean mass(g)</td>
+<td style="text-align: right;">1039</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">5.50</td>
+<td style="text-align: right;">3.00</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">3.00</td>
+<td style="text-align: right;">4.63</td>
+<td style="text-align: right;">7.60</td>
+<td style="text-align: right;">16.76</td>
+<td style="text-align: left;">▇▅▅▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AFR(mo)</td>
+<td style="text-align: right;">607</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">2.47</td>
+<td style="text-align: right;">1.21</td>
+<td style="text-align: right;">-0.36</td>
+<td style="text-align: right;">1.50</td>
+<td style="text-align: right;">2.48</td>
+<td style="text-align: right;">3.34</td>
+<td style="text-align: right;">5.35</td>
+<td style="text-align: left;">▂▅▇▇▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">max. life(mo)</td>
+<td style="text-align: right;">841</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">5.06</td>
+<td style="text-align: right;">0.92</td>
+<td style="text-align: right;">2.48</td>
+<td style="text-align: right;">4.43</td>
+<td style="text-align: right;">5.26</td>
+<td style="text-align: right;">5.66</td>
+<td style="text-align: right;">7.22</td>
+<td style="text-align: left;">▁▃▆▇▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">litters/year</td>
+<td style="text-align: right;">689</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">-1.97</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">2.01</td>
+<td style="text-align: left;">▁▂▇▅▂</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 <section id="step-4" class="level2">
 <h2 class="anchored" data-anchor-id="step-4">Step 4</h2>
+<p>Now I need to get the relative values of gestation(mo), weaning(mo), AFR(mo), max. life(mo), newborn(g), and wean mass(g). I will do this by regressing each of these variables on mass(g) and use the residuals as the relative value. These values will then be added to the original data frame. First though I need to drop all the NA values so that the lm() function will work and I can smoothly add the residuals to the data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(<span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Age values</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>relGest <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Gestation</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>relWean <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#weaning</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>relAFR <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#AFR</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>relLife <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Max life</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#Mass</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>relNewbornMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Newborn mass</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>relWeaningMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Weaning mass</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Adding to original data frame</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">relGest =</span> relGest<span class="sc">$</span>residuals, <span class="at">relWean =</span> relWean<span class="sc">$</span>residuals, <span class="at">relAFR =</span> relAFR<span class="sc">$</span>residuals, </span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">relLife =</span> relLife<span class="sc">$</span>residuals, <span class="at">relNewbornMass =</span> relNewbornMass<span class="sc">$</span>residuals, <span class="at">relWeaningMass =</span> relWeaningMass<span class="sc">$</span>residuals)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(<span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Age values</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>relGest <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>) <span class="co">#Gestation</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>relWean <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#weaning</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>relAFR <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#AFR</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>relLife <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Max life</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#Mass</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>relNewbornMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Newborn mass</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>relWeaningMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Weaning mass</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Adding to original data frame</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">relGest =</span> relGest<span class="sc">$</span>residuals, <span class="at">relWean =</span> relWean<span class="sc">$</span>residuals, <span class="at">relAFR =</span> relAFR<span class="sc">$</span>residuals, </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">relLife =</span> relLife<span class="sc">$</span>residuals, <span class="at">relNewbornMass =</span> relNewbornMass<span class="sc">$</span>residuals, <span class="at">relWeaningMass =</span> relWeaningMass<span class="sc">$</span>residuals)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">d</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">235</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">18</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">character</td>
+<td style="text-align: left;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">14</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 13%">
+<col style="width: 19%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">empty</th>
+<th style="text-align: right;">n_unique</th>
+<th style="text-align: right;">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">order</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">family</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Genus</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">182</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">species</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">222</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 11%">
+<col style="width: 16%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">mass(g)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">7.72</td>
+<td style="text-align: right;">3.32</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">4.89</td>
+<td style="text-align: right;">8.02</td>
+<td style="text-align: right;">10.62</td>
+<td style="text-align: right;">18.82</td>
+<td style="text-align: left;">▅▆▇▂▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gestation(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.97</td>
+<td style="text-align: right;">0.95</td>
+<td style="text-align: right;">-0.62</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.93</td>
+<td style="text-align: right;">1.84</td>
+<td style="text-align: right;">3.07</td>
+<td style="text-align: left;">▇▆▃▇▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">newborn(g)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">4.62</td>
+<td style="text-align: right;">3.21</td>
+<td style="text-align: right;">-1.56</td>
+<td style="text-align: right;">1.83</td>
+<td style="text-align: right;">4.55</td>
+<td style="text-align: right;">6.84</td>
+<td style="text-align: right;">14.63</td>
+<td style="text-align: left;">▆▇▆▅▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">weaning(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.83</td>
+<td style="text-align: right;">1.07</td>
+<td style="text-align: right;">-1.20</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">1.69</td>
+<td style="text-align: right;">3.67</td>
+<td style="text-align: left;">▃▇▅▃▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wean mass(g)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">6.47</td>
+<td style="text-align: right;">3.17</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">3.67</td>
+<td style="text-align: right;">6.43</td>
+<td style="text-align: right;">9.06</td>
+<td style="text-align: right;">16.76</td>
+<td style="text-align: left;">▇▇▇▃▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AFR(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2.58</td>
+<td style="text-align: right;">1.18</td>
+<td style="text-align: right;">-0.06</td>
+<td style="text-align: right;">1.66</td>
+<td style="text-align: right;">2.66</td>
+<td style="text-align: right;">3.55</td>
+<td style="text-align: right;">4.99</td>
+<td style="text-align: left;">▃▃▇▇▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">max. life(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">5.01</td>
+<td style="text-align: right;">0.92</td>
+<td style="text-align: right;">2.48</td>
+<td style="text-align: right;">4.28</td>
+<td style="text-align: right;">5.23</td>
+<td style="text-align: right;">5.70</td>
+<td style="text-align: right;">7.19</td>
+<td style="text-align: left;">▁▅▅▇▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">litters/year</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">0.88</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.70</td>
+<td style="text-align: right;">-1.61</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">1.70</td>
+<td style="text-align: left;">▁▃▇▅▃</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">relGest</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">-1.32</td>
+<td style="text-align: right;">-0.37</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">1.30</td>
+<td style="text-align: left;">▁▆▇▅▂</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">relWean</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.82</td>
+<td style="text-align: right;">-2.98</td>
+<td style="text-align: right;">-0.43</td>
+<td style="text-align: right;">-0.07</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">2.19</td>
+<td style="text-align: left;">▁▁▇▅▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">relAFR</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">-1.97</td>
+<td style="text-align: right;">-0.54</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.56</td>
+<td style="text-align: right;">1.84</td>
+<td style="text-align: left;">▂▆▇▇▂</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">relLife</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">-1.51</td>
+<td style="text-align: right;">-0.32</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.34</td>
+<td style="text-align: right;">1.45</td>
+<td style="text-align: left;">▁▃▇▃▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">relNewbornMass</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">-3.59</td>
+<td style="text-align: right;">-0.44</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">1.74</td>
+<td style="text-align: left;">▁▁▃▇▃</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">relWeaningMass</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.55</td>
+<td style="text-align: right;">-1.96</td>
+<td style="text-align: right;">-0.33</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">1.27</td>
+<td style="text-align: left;">▁▂▇▇▂</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 <section id="step-5" class="level2">
 <h2 class="anchored" data-anchor-id="step-5">Step 5</h2>
+<p>Now I will create boxplots which will plot relative max lifespan, relative newborn mass, and relative weaning mass in relation to order. Based on the graphs, primates have the highest residual lifespan, cetacea has the highest residual newborn mass, and perissodactyla has the highest residual weaning mass.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>lifeOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relLife)) <span class="sc">+</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Lifespan"</span>) <span class="sc">+</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>newmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relNewbornMass)) <span class="sc">+</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Newborn Mass(g)"</span>) <span class="sc">+</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>weanmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relWeaningMass)) <span class="sc">+</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Weaning Mass"</span>) <span class="sc">+</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(lifeOrder, newmassOrder, weanmassOrder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lifeOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relLife)) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Lifespan"</span>) <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>newmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relNewbornMass)) <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Newborn Mass(g)"</span>) <span class="sc">+</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>weanmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relWeaningMass)) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Weaning Mass"</span>) <span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(lifeOrder, newmassOrder, weanmassOrder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -464,14 +1588,346 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-6" class="level2">
 <h2 class="anchored" data-anchor-id="step-6">Step 6</h2>
+<p>Now we will run two full models and run a model selection process to determine which variables are the best predictors of the response variables. The first model will be (max. life(mo) ~ gestation(mo) + newborn(g) + weaning(mo) + wean mass(g) + litters/year + mass(g)) and the second model will be (AFR(mo) ~ gestation(mo) + newborn(g) + weaning(mo) + wean mass(g) + litters/year + mass(g)). I will use the stepAIC() function from {MASS} and the dredge() function from {MuMIn} to conduct and visualize the model selection. First, I will drop NA values from the remaining variables which have not had them dropped yet (litters/year and mass(g))</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(<span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>, <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Max life(mo) models</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>lifeFull <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">+</span> </span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.fail)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lifeFull)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(<span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>, <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">d</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">206</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">18</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">character</td>
+<td style="text-align: left;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">14</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 13%">
+<col style="width: 19%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">empty</th>
+<th style="text-align: right;">n_unique</th>
+<th style="text-align: right;">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">order</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">family</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Genus</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">species</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">196</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 11%">
+<col style="width: 16%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">mass(g)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7.91</td>
+<td style="text-align: right;">3.27</td>
+<td style="text-align: right;">1.98</td>
+<td style="text-align: right;">5.15</td>
+<td style="text-align: right;">8.11</td>
+<td style="text-align: right;">10.77</td>
+<td style="text-align: right;">18.82</td>
+<td style="text-align: left;">▇▇▇▂▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gestation(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.01</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">-0.62</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.89</td>
+<td style="text-align: right;">3.07</td>
+<td style="text-align: left;">▆▅▃▇▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">newborn(g)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4.78</td>
+<td style="text-align: right;">3.21</td>
+<td style="text-align: right;">-0.76</td>
+<td style="text-align: right;">1.94</td>
+<td style="text-align: right;">4.65</td>
+<td style="text-align: right;">7.19</td>
+<td style="text-align: right;">14.63</td>
+<td style="text-align: left;">▇▇▇▅▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">weaning(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.91</td>
+<td style="text-align: right;">1.10</td>
+<td style="text-align: right;">-1.20</td>
+<td style="text-align: right;">-0.06</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">1.76</td>
+<td style="text-align: right;">3.67</td>
+<td style="text-align: left;">▃▇▅▅▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wean mass(g)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6.64</td>
+<td style="text-align: right;">3.14</td>
+<td style="text-align: right;">1.21</td>
+<td style="text-align: right;">3.79</td>
+<td style="text-align: right;">6.78</td>
+<td style="text-align: right;">9.33</td>
+<td style="text-align: right;">16.76</td>
+<td style="text-align: left;">▇▇▇▃▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AFR(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2.65</td>
+<td style="text-align: right;">1.17</td>
+<td style="text-align: right;">-0.06</td>
+<td style="text-align: right;">2.00</td>
+<td style="text-align: right;">2.70</td>
+<td style="text-align: right;">3.58</td>
+<td style="text-align: right;">4.99</td>
+<td style="text-align: left;">▂▃▇▇▃</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">max. life(mo)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5.06</td>
+<td style="text-align: right;">0.91</td>
+<td style="text-align: right;">2.48</td>
+<td style="text-align: right;">4.34</td>
+<td style="text-align: right;">5.29</td>
+<td style="text-align: right;">5.72</td>
+<td style="text-align: right;">7.19</td>
+<td style="text-align: left;">▁▃▅▇▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">litters/year</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.70</td>
+<td style="text-align: right;">-1.61</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">1.70</td>
+<td style="text-align: left;">▁▃▇▅▃</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">relGest</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">-1.32</td>
+<td style="text-align: right;">-0.40</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">1.30</td>
+<td style="text-align: left;">▁▆▇▆▂</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">relWean</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.84</td>
+<td style="text-align: right;">-2.98</td>
+<td style="text-align: right;">-0.42</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">2.19</td>
+<td style="text-align: left;">▁▁▇▅▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">relAFR</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">-1.97</td>
+<td style="text-align: right;">-0.53</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">1.84</td>
+<td style="text-align: left;">▂▆▇▇▂</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">relLife</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">-1.51</td>
+<td style="text-align: right;">-0.32</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">1.45</td>
+<td style="text-align: left;">▁▃▇▅▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">relNewbornMass</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.82</td>
+<td style="text-align: right;">-3.59</td>
+<td style="text-align: right;">-0.46</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">1.74</td>
+<td style="text-align: left;">▁▁▃▇▃</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">relWeaningMass</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.56</td>
+<td style="text-align: right;">-1.96</td>
+<td style="text-align: right;">-0.33</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">1.27</td>
+<td style="text-align: left;">▁▂▇▇▂</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="predicting-max.-lifemo" class="level3">
+<h3 class="anchored" data-anchor-id="predicting-max.-lifemo">Predicting max. life(mo)</h3>
+<p>Based on the stepAIC() function, the best overall model was (max. life(mo) ~ gestation(mo) + litters/year + mass(g) + weaning(mo)) with an AICc value of 256.83 and a delta AICc of 0.00. In total 5 models has a delta AICc of 4 or less.</p>
+<p>Variables which appear in all of these “top” models were gestation(mo), litter/year, and weaning(mo).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Max life(mo) models</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>lifeFull <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">+</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.fail)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lifeFull)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -499,76 +1955,81 @@ Residual standard error: 0.4442 on 199 degrees of freedom
 Multiple R-squared:  0.7689,    Adjusted R-squared:  0.762 
 F-statistic: 110.4 on 6 and 199 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>lifeTest <span class="ot">&lt;-</span> <span class="fu">stepAIC</span>(lifeFull, <span class="at">scope =</span> .<span class="sc">~</span>., <span class="at">direction =</span> <span class="st">"both"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Start:  AIC=-327.43
-`max. life(mo)` ~ `gestation(mo)` + `newborn(g)` + `weaning(mo)` + 
-    `wean mass(g)` + `litters/year` + `mass(g)`
-
-                  Df Sum of Sq    RSS     AIC
-- `wean mass(g)`   1   0.02286 39.293 -329.31
-- `newborn(g)`     1   0.23054 39.500 -328.22
-&lt;none&gt;                         39.270 -327.43
-- `mass(g)`        1   0.72550 39.995 -325.66
-- `weaning(mo)`    1   1.09732 40.367 -323.75
-- `litters/year`   1   1.72842 40.998 -320.56
-- `gestation(mo)`  1   2.71500 41.985 -315.66
-
-Step:  AIC=-329.31
-`max. life(mo)` ~ `gestation(mo)` + `newborn(g)` + `weaning(mo)` + 
-    `litters/year` + `mass(g)`
-
-                  Df Sum of Sq    RSS     AIC
-- `newborn(g)`     1   0.21387 39.507 -330.19
-&lt;none&gt;                         39.293 -329.31
-+ `wean mass(g)`   1   0.02286 39.270 -327.43
-- `weaning(mo)`    1   1.15324 40.446 -325.35
-- `mass(g)`        1   1.63907 40.932 -322.89
-- `litters/year`   1   1.77294 41.066 -322.22
-- `gestation(mo)`  1   2.70723 42.000 -317.58
-
-Step:  AIC=-330.19
-`max. life(mo)` ~ `gestation(mo)` + `weaning(mo)` + `litters/year` + 
-    `mass(g)`
-
-                  Df Sum of Sq    RSS     AIC
-&lt;none&gt;                         39.507 -330.19
-+ `newborn(g)`     1    0.2139 39.293 -329.31
-+ `wean mass(g)`   1    0.0062 39.500 -328.22
-- `weaning(mo)`    1    1.4531 40.960 -324.75
-- `litters/year`   1    2.1006 41.607 -321.52
-- `gestation(mo)`  1    3.2623 42.769 -315.85
-- `mass(g)`        1    3.6976 43.204 -313.76</code></pre>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>lfMods <span class="ot">&lt;-</span> <span class="fu">dredge</span>(lifeFull)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Fixed term is "(Intercept)"</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>lifeTest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>lfModsAvg <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">model.avg</span>(lfMods, <span class="at">subset =</span> delta <span class="sc">&lt;=</span> <span class="dv">4</span>, <span class="at">fit =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>lfModsAvg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
-lm(formula = `max. life(mo)` ~ `gestation(mo)` + `weaning(mo)` + 
-    `litters/year` + `mass(g)`, data = d, na.action = na.fail)
+model.avg(object = get.models(object = lfMods, subset = delta &lt;= 
+    4))
 
-Coefficients:
-    (Intercept)  `gestation(mo)`    `weaning(mo)`   `litters/year`  
-        4.03241          0.29528          0.14159         -0.25252  
-      `mass(g)`  
-        0.08226  </code></pre>
+Component model call: 
+lm(formula = `max. life(mo)` ~ &lt;5 unique rhs&gt;, data = d, na.action = 
+     na.fail)
+
+Component models: 
+       df  logLik   AICc delta weight
+1236    6 -122.21 256.83  0.00   0.42
+12346   7 -121.65 257.86  1.03   0.25
+12356   7 -122.19 258.95  2.11   0.14
+1256    6 -123.63 259.69  2.85   0.10
+123456  8 -121.59 259.91  3.07   0.09
+
+Term codes: 
+`gestation(mo)`  `litters/year`       `mass(g)`    `newborn(g)`  `wean mass(g)` 
+              1               2               3               4               5 
+  `weaning(mo)` 
+              6 
+
+Model-averaged coefficients:  
+(full average) 
+                Estimate Std. Error Adjusted SE z value Pr(&gt;|z|)    
+(Intercept)      4.00291    0.16134     0.16215  24.687  &lt; 2e-16 ***
+`gestation(mo)`  0.31844    0.08975     0.09022   3.530 0.000416 ***
+`litters/year`  -0.24853    0.07848     0.07895   3.148 0.001645 ** 
+`mass(g)`        0.08746    0.04908     0.04925   1.776 0.075726 .  
+`weaning(mo)`    0.13659    0.05294     0.05326   2.565 0.010332 *  
+`newborn(g)`    -0.01920    0.04131     0.04146   0.463 0.643204    
+`wean mass(g)`   0.00911    0.04176     0.04191   0.217 0.827903    
+ 
+(conditional average) 
+                Estimate Std. Error Adjusted SE z value Pr(&gt;|z|)    
+(Intercept)      4.00291    0.16134     0.16215  24.687  &lt; 2e-16 ***
+`gestation(mo)`  0.31844    0.08975     0.09022   3.530 0.000416 ***
+`litters/year`  -0.24853    0.07848     0.07895   3.148 0.001645 ** 
+`mass(g)`        0.09717    0.04164     0.04185   2.322 0.020236 *  
+`weaning(mo)`    0.13659    0.05294     0.05326   2.565 0.010332 *  
+`newborn(g)`    -0.05666    0.05398     0.05431   1.043 0.296810    
+`wean mass(g)`   0.02724    0.06870     0.06898   0.395 0.692865    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>lfMods <span class="ot">&lt;-</span> <span class="fu">dredge</span>(lifeFull)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>lfModsAvg <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">model.avg</span>(lfMods, <span class="at">subset =</span> delta <span class="sc">&lt;=</span> <span class="dv">4</span>, <span class="at">fit =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lfModsAvg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now I will calculate and plot the model-averaged coefficients along with their CIs. The variable lfModsAvg already did this for me, so I will not use the plot() function to display the coefficients and their CIs</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lfModsAvg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ex11_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ex11_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>lfCI <span class="ot">&lt;-</span> <span class="fu">confint</span>(lfModsAvg)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#AFR(mo) models</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>AFRFull <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">+</span> </span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.fail)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(AFRFull)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="predicting-afrmo" class="level3">
+<h3 class="anchored" data-anchor-id="predicting-afrmo">Predicting AFR(mo)</h3>
+<p>The best model for predicting AFR(mo) was (AFR(mo) ~ gestation(mo) + litters/year + mass(g) + weaning(mo)) with an AICc of 321.23 and a delta AICc of 0.00 based on the dredge() function. In total, 10 models had an AICc of 4 or less.</p>
+<p>Th variables gestation(mo) and litters/year appear in all of the “top” models.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#AFR(mo) models</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>AFRFull <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">+</span> </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span> <span class="sc">+</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.fail)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(AFRFull)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -595,71 +2056,78 @@ Residual standard error: 0.5209 on 199 degrees of freedom
 Multiple R-squared:  0.8072,    Adjusted R-squared:  0.8014 
 F-statistic: 138.9 on 6 and 199 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>AFRTest <span class="ot">&lt;-</span> <span class="fu">stepAIC</span>(AFRFull, <span class="at">scope =</span> .<span class="sc">~</span>., <span class="at">direction =</span> <span class="st">"both"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Start:  AIC=-261.8
-`AFR(mo)` ~ `gestation(mo)` + `newborn(g)` + `weaning(mo)` + 
-    `wean mass(g)` + `litters/year` + `mass(g)`
-
-                  Df Sum of Sq    RSS     AIC
-- `newborn(g)`     1    0.0007 54.003 -263.80
-- `wean mass(g)`   1    0.0008 54.003 -263.80
-- `mass(g)`        1    0.0756 54.078 -263.51
-&lt;none&gt;                         54.003 -261.80
-- `weaning(mo)`    1    1.4058 55.408 -258.51
-- `gestation(mo)`  1    3.3496 57.352 -251.41
-- `litters/year`   1   15.8129 69.815 -210.90
-
-Step:  AIC=-263.8
-`AFR(mo)` ~ `gestation(mo)` + `weaning(mo)` + `wean mass(g)` + 
-    `litters/year` + `mass(g)`
-
-                  Df Sum of Sq    RSS     AIC
-- `wean mass(g)`   1    0.0003 54.004 -265.80
-- `mass(g)`        1    0.0777 54.081 -265.50
-&lt;none&gt;                         54.003 -263.80
-+ `newborn(g)`     1    0.0007 54.003 -261.80
-- `weaning(mo)`    1    1.5166 55.520 -260.09
-- `gestation(mo)`  1    5.2066 59.210 -246.84
-- `litters/year`   1   16.5887 70.592 -210.62
-
-Step:  AIC=-265.8
-`AFR(mo)` ~ `gestation(mo)` + `weaning(mo)` + `litters/year` + 
-    `mass(g)`
-
-                  Df Sum of Sq    RSS     AIC
-&lt;none&gt;                         54.004 -265.80
-- `mass(g)`        1    0.7156 54.719 -265.09
-+ `wean mass(g)`   1    0.0003 54.003 -263.80
-+ `newborn(g)`     1    0.0002 54.003 -263.80
-- `weaning(mo)`    1    1.5170 55.521 -262.09
-- `gestation(mo)`  1    6.0758 60.079 -245.84
-- `litters/year`   1   16.5910 70.595 -212.61</code></pre>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>AFRmods <span class="ot">&lt;-</span> <span class="fu">dredge</span>(AFRFull)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Fixed term is "(Intercept)"</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>AFRTest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>AFRavg <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">model.avg</span>(AFRmods, <span class="at">subset =</span> delta <span class="sc">&lt;=</span> <span class="dv">4</span>, <span class="at">fit =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>AFRavg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
-lm(formula = `AFR(mo)` ~ `gestation(mo)` + `weaning(mo)` + `litters/year` + 
-    `mass(g)`, data = d, na.action = na.fail)
+model.avg(object = get.models(object = AFRmods, subset = delta &lt;= 
+    4))
 
-Coefficients:
-    (Intercept)  `gestation(mo)`    `weaning(mo)`   `litters/year`  
-        1.97319          0.40296          0.14467         -0.70968  
-      `mass(g)`  
-        0.03619  </code></pre>
+Component model call: 
+lm(formula = `AFR(mo)` ~ &lt;10 unique rhs&gt;, data = d, na.action = 
+     na.fail)
+
+Component models: 
+      df  logLik   AICc delta weight
+1236   6 -154.40 321.23  0.00   0.20
+1256   6 -154.55 321.52  0.30   0.18
+126    5 -155.76 321.82  0.59   0.15
+1246   6 -154.70 321.82  0.59   0.15
+12356  7 -154.40 323.37  2.14   0.07
+12346  7 -154.40 323.37  2.14   0.07
+12456  7 -154.54 323.65  2.43   0.06
+12     4 -157.96 324.12  2.89   0.05
+123    5 -157.26 324.81  3.58   0.03
+125    5 -157.32 324.94  3.71   0.03
+
+Term codes: 
+`gestation(mo)`  `litters/year`       `mass(g)`    `newborn(g)`  `wean mass(g)` 
+              1               2               3               4               5 
+  `weaning(mo)` 
+              6 
+
+Model-averaged coefficients:  
+(full average) 
+                 Estimate Std. Error Adjusted SE z value Pr(&gt;|z|)    
+(Intercept)      2.059308   0.164411    0.165109  12.472  &lt; 2e-16 ***
+`gestation(mo)`  0.424816   0.104323    0.104789   4.054 5.04e-05 ***
+`litters/year`  -0.736632   0.096521    0.097003   7.594  &lt; 2e-16 ***
+`mass(g)`        0.013294   0.029383    0.029501   0.451    0.652    
+`weaning(mo)`    0.125434   0.073485    0.073759   1.701    0.089 .  
+`wean mass(g)`   0.009906   0.031169    0.031308   0.316    0.752    
+`newborn(g)`     0.006295   0.028974    0.029108   0.216    0.829    
+ 
+(conditional average) 
+                Estimate Std. Error Adjusted SE z value Pr(&gt;|z|)    
+(Intercept)      2.05931    0.16441     0.16511  12.472  &lt; 2e-16 ***
+`gestation(mo)`  0.42482    0.10432     0.10479   4.054 5.04e-05 ***
+`litters/year`  -0.73663    0.09652     0.09700   7.594  &lt; 2e-16 ***
+`mass(g)`        0.03511    0.03891     0.03915   0.897   0.3698    
+`weaning(mo)`    0.14159    0.06171     0.06207   2.281   0.0225 *  
+`wean mass(g)`   0.02921    0.04797     0.04823   0.606   0.5448    
+`newborn(g)`     0.02227    0.05113     0.05140   0.433   0.6648    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>AFRmods <span class="ot">&lt;-</span> <span class="fu">dredge</span>(AFRFull)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>AFRavg <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">model.avg</span>(AFRmods, <span class="at">subset =</span> delta <span class="sc">&lt;=</span> <span class="dv">4</span>, <span class="at">fit =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(AFRavg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now I will again plot the model-averaged coefficients and their CIs which I calculated in the AFRavg variable</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(AFRavg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ex11_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ex11_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+</section>
+</section>
 </section>
 
 </main>

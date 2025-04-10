@@ -2,9 +2,17 @@
 title: "exercise-11"
 format: html
 editor: visual
+toc: true
+toc-depth: 3
 ---
 
+# Practice Model Selection
+
+In this exercise I will use a mammal life history data set to run and test the strength of different linear models.
+
 ## Initial Set Up
+
+First I need to load in the libraries containing the tools needed to run the analysis. I will also load in and examine the data. The data has 14 different variables. Of them, order, family, Genus, and species are categorical variables. The numeric variables are mass(g), gestation(mo), newborn(g), weaning(mo), wean mass(g), AFR(mo), max. life(mo), litt size, litter/year, and refs
 
 ```{r}
 #| message: false
@@ -20,21 +28,24 @@ library(MuMIn)
 
 f <- "https://raw.githubusercontent.com/difiore/ada-datasets/main/Mammal_lifehistories_v2.txt"
 d <- read_tsv(f)
-skim(d) #Categorical data: order, family, Genus, species
-#Numeric data: mass(g), gestation(mo), newborn(g), weaning(mo), wean mass(g), AFR(mo), max.life(mo),
-#litter size, litters/year, refs
+skim(d)
 ```
 
 ## Step 1
+
+First I need to replace all the cells with a value of -999 with NA. I will do this using the replace_with_na_all() function from {naniar}.
 
 ```{r}
 #| message: false
 #| warning: false
 d <- d |>
   replace_with_na_all(condition = ~.x == -999)
+skim(d)
 ```
 
 ## Step 2
+
+Now I will drop the numeric variables litter size and refs by selecting all the variables except for those two.
 
 ```{r}
 #| message: false
@@ -42,9 +53,12 @@ d <- d |>
 d <- d |>
   dplyr::select(order, family, Genus, species, `mass(g)`, `gestation(mo)`, `newborn(g)`,
          `weaning(mo)`, `wean mass(g)`, `AFR(mo)`, `max. life(mo)`, `litters/year`)
+skim(d)
 ```
 
 ## Step 3
+
+Next I will log transform all of the numeric variables using the mutate() function.
 
 ```{r}
 #| message: false
@@ -54,9 +68,12 @@ d <- d |>
          `newborn(g)` = log(`newborn(g)`), `weaning(mo)` = log(`weaning(mo)`),
          `wean mass(g)` = log(`wean mass(g)`), `AFR(mo)` = log(`AFR(mo)`),
          `max. life(mo)` = log(`max. life(mo)`), `litters/year` = log(`litters/year`))
+skim(d)
 ```
 
 ## Step 4
+
+Now I need to get the relative values of gestation(mo), weaning(mo), AFR(mo), max. life(mo), newborn(g), and wean mass(g). I will do this by regressing each of these variables on mass(g) and use the residuals as the relative value. These values will then be added to the original data frame. First though I need to drop all the NA values so that the lm() function will work and I can smoothly add the residuals to the data frame.
 
 ```{r}
 #| message: false
@@ -64,7 +81,7 @@ d <- d |>
 d <- d |>
   drop_na(`gestation(mo)`, `weaning(mo)`, `AFR(mo)`, `max. life(mo)`, `newborn(g)`, `wean mass(g)`)
 #Age values
-relGest <- lm(data = d, `gestation(mo)` ~ `mass(g)`, na.action = na.exclude) #Gestation
+relGest <- lm(data = d, `gestation(mo)` ~ `mass(g)`) #Gestation
 relWean <- lm(data = d, `weaning(mo)` ~ `mass(g)`, na.action = na.exclude) #weaning
 relAFR <- lm(data = d, `AFR(mo)` ~ `mass(g)`, na.action = na.exclude) #AFR
 relLife <- lm(data = d, `max. life(mo)` ~ `mass(g)`, na.action = na.exclude) #Max life
@@ -77,9 +94,12 @@ relWeaningMass <- lm(data = d, `wean mass(g)` ~ `mass(g)`, na.action = na.exclud
 d <- d |>
   mutate(relGest = relGest$residuals, relWean = relWean$residuals, relAFR = relAFR$residuals, 
          relLife = relLife$residuals, relNewbornMass = relNewbornMass$residuals, relWeaningMass = relWeaningMass$residuals)
+skim(d)
 ```
 
 ## Step 5
+
+Now I will create boxplots which will plot relative max lifespan, relative newborn mass, and relative weaning mass in relation to order. Based on the graphs, primates have the highest residual lifespan, cetacea has the highest residual newborn mass, and perissodactyla has the highest residual weaning mass.
 
 ```{r}
 #| message: false
@@ -104,34 +124,58 @@ plot_grid(lifeOrder, newmassOrder, weanmassOrder)
 
 ## Step 6
 
+Now we will run two full models and run a model selection process to determine which variables are the best predictors of the response variables. The first model will be (max. life(mo) \~ gestation(mo) + newborn(g) + weaning(mo) + wean mass(g) + litters/year + mass(g)) and the second model will be (AFR(mo) \~ gestation(mo) + newborn(g) + weaning(mo) + wean mass(g) + litters/year + mass(g)). I will use the stepAIC() function from {MASS} and the dredge() function from {MuMIn} to conduct and visualize the model selection. First, I will drop NA values from the remaining variables which have not had them dropped yet (litters/year and mass(g))
+
 ```{r}
 #| message: false
 #| warning: false
 d <- d |>
   drop_na(`litters/year`, `mass(g)`)
+skim(d)
+```
 
+### Predicting max. life(mo)
+
+Based on the stepAIC() function, the best overall model was (max. life(mo) \~ gestation(mo) + litters/year + mass(g) + weaning(mo)) with an AICc value of 256.83 and a delta AICc of 0.00. In total 5 models has a delta AICc of 4 or less.
+
+Variables which appear in all of these "top" models were gestation(mo), litter/year, and weaning(mo).
+
+```{r}
 #Max life(mo) models
 lifeFull <- lm(data = d, `max. life(mo)` ~ `gestation(mo)` + `newborn(g)` + 
                  `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`, na.action = na.fail)
 summary(lifeFull)
 
-lifeTest <- stepAIC(lifeFull, scope = .~., direction = "both")
-lifeTest
-
 lfMods <- dredge(lifeFull)
 lfModsAvg <- summary(model.avg(lfMods, subset = delta <= 4, fit = TRUE))
-plot(lfModsAvg)
-lfCI <- confint(lfModsAvg)
+lfModsAvg
+```
 
+Now I will calculate and plot the model-averaged coefficients along with their CIs. The variable lfModsAvg already did this for me, so I will not use the plot() function to display the coefficients and their CIs
+
+```{r}
+plot(lfModsAvg)
+```
+
+### Predicting AFR(mo) 
+
+The best model for predicting AFR(mo) was (AFR(mo) \~ gestation(mo) + litters/year + mass(g) + weaning(mo)) with an AICc of 321.23 and a delta AICc of 0.00 based on the dredge() function. In total, 10 models had an AICc of 4 or less.
+
+Th variables gestation(mo) and litters/year appear in all of the "top" models.
+
+```{r}
 #AFR(mo) models
 AFRFull <- lm(data = d, `AFR(mo)` ~ `gestation(mo)` + `newborn(g)` + 
                  `weaning(mo)` + `wean mass(g)` + `litters/year` + `mass(g)`, na.action = na.fail)
 summary(AFRFull)
 
-AFRTest <- stepAIC(AFRFull, scope = .~., direction = "both")
-AFRTest
-
 AFRmods <- dredge(AFRFull)
 AFRavg <- summary(model.avg(AFRmods, subset = delta <= 4, fit = TRUE))
+AFRavg
+```
+
+Now I will again plot the model-averaged coefficients and their CIs which I calculated in the AFRavg variable
+
+```{r}
 plot(AFRavg)
 ```
