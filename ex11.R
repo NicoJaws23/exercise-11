@@ -20,8 +20,7 @@ d <- d |>
 #Step 2: Drop litter size and refs
 names(d)
 d <- d |>
-  dplyr::select(c(order, family, Genus, species, `mass(g)`, `gestation(mo)`, `newborn(g)`,
-                  `weaning(mo)`, `wean mass(g)`, `AFR(mo)`, `max. life(mo)`, `litters/year`))
+  dplyr::select(-c(`litter size`, `refs`))
 
 #Step 3, log transform all numeric variables
 d <- d |>

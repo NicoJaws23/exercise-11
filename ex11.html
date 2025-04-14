@@ -695,12 +695,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-2" class="level2">
 <h2 class="anchored" data-anchor-id="step-2">Step 2</h2>
-<p>Now I will drop the numeric variables litter size and refs by selecting all the variables except for those two.</p>
+<p>Now I will drop the numeric variables litter size and refs.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(order, family, Genus, species, <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">`</span><span class="at">litter size</span><span class="st">`</span>, <span class="st">`</span><span class="at">refs</span><span class="st">`</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Data summary</caption>

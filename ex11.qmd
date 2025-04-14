@@ -45,14 +45,13 @@ skim(d)
 
 ## Step 2
 
-Now I will drop the numeric variables litter size and refs by selecting all the variables except for those two.
+Now I will drop the numeric variables litter size and refs.
 
 ```{r}
 #| message: false
 #| warning: false
 d <- d |>
-  dplyr::select(order, family, Genus, species, `mass(g)`, `gestation(mo)`, `newborn(g)`,
-         `weaning(mo)`, `wean mass(g)`, `AFR(mo)`, `max. life(mo)`, `litters/year`)
+  dplyr::select(-c(`litter size`, `refs`))
 skim(d)
 ```
 
@@ -157,7 +156,7 @@ Now I will calculate and plot the model-averaged coefficients along with their C
 plot(lfModsAvg)
 ```
 
-### Predicting AFR(mo) 
+### Predicting AFR(mo)
 
 The best model for predicting AFR(mo) was (AFR(mo) \~ gestation(mo) + litters/year + mass(g) + weaning(mo)) with an AICc of 321.23 and a delta AICc of 0.00 based on the dredge() function. In total, 10 models had an AICc of 4 or less.
 
