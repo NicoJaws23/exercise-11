@@ -77,10 +77,8 @@ Now I need to get the relative values of gestation(mo), weaning(mo), AFR(mo), ma
 ```{r}
 #| message: false
 #| warning: false
-d <- d |>
-  drop_na(`gestation(mo)`, `weaning(mo)`, `AFR(mo)`, `max. life(mo)`, `newborn(g)`, `wean mass(g)`)
 #Age values
-relGest <- lm(data = d, `gestation(mo)` ~ `mass(g)`) #Gestation
+relGest <- lm(data = d, `gestation(mo)` ~ `mass(g)`, na.action = na.exclude) #Gestation
 relWean <- lm(data = d, `weaning(mo)` ~ `mass(g)`, na.action = na.exclude) #weaning
 relAFR <- lm(data = d, `AFR(mo)` ~ `mass(g)`, na.action = na.exclude) #AFR
 relLife <- lm(data = d, `max. life(mo)` ~ `mass(g)`, na.action = na.exclude) #Max life
@@ -89,31 +87,29 @@ relLife <- lm(data = d, `max. life(mo)` ~ `mass(g)`, na.action = na.exclude) #Ma
 relNewbornMass <- lm(data = d, `newborn(g)` ~ `mass(g)`, na.action = na.exclude) #Newborn mass
 relWeaningMass <- lm(data = d, `wean mass(g)` ~ `mass(g)`, na.action = na.exclude) #Weaning mass
 
-#Adding to original data frame
 d <- d |>
-  mutate(relGest = relGest$residuals, relWean = relWean$residuals, relAFR = relAFR$residuals, 
-         relLife = relLife$residuals, relNewbornMass = relNewbornMass$residuals, relWeaningMass = relWeaningMass$residuals)
+  mutate(relGest = resid(relGest), relWean = resid(relWean), relAFR = resid(relAFR), relLife = resid(relLife), relNewbornMass = resid(relNewbornMass), relWeaningMass = resid(relWeaningMass))
 skim(d)
 ```
 
 ## Step 5
 
-Now I will create boxplots which will plot relative max lifespan, relative newborn mass, and relative weaning mass in relation to order. Based on the graphs, primates have the highest residual lifespan, cetacea has the highest residual newborn mass, and perissodactyla has the highest residual weaning mass.
+Now I will create boxplots which will plot relative max lifespan, relative newborn mass, and relative weaning mass in relation to order. Based on the graphs, primates have the highest residual lifespan with xenarthra being a close second, cetacea has the highest residual newborn mass with macroscelidea being at a similar level, and perissodactyla has the highest residual weaning mass with cetacea having the second highest value.
 
 ```{r}
 #| message: false
 #| warning: false
-lifeOrder <- ggplot(data = d, mapping = aes(x = order, y = relLife)) +
+lifeOrder <- ggplot(data = d |> drop_na(relLife), mapping = aes(x = order, y = relLife)) +
   geom_boxplot() +
   ggtitle("Order and Lifespan") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-newmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relNewbornMass)) +
+newmassOrder <- ggplot(data = d |> drop_na(relNewbornMass), mapping = aes(x = order, y = relNewbornMass)) +
   geom_boxplot() +
   ggtitle("Order and Newborn Mass(g)") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-weanmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relWeaningMass)) +
+weanmassOrder <- ggplot(data = d |> drop_na(relWeaningMass), mapping = aes(x = order, y = relWeaningMass)) +
   geom_boxplot() +
   ggtitle("Order and Weaning Mass") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -129,7 +125,7 @@ Now we will run two full models and run a model selection process to determine w
 #| message: false
 #| warning: false
 d <- d |>
-  drop_na(`litters/year`, `mass(g)`)
+  drop_na(`max. life(mo)`, `AFR(mo)`, `gestation(mo)`, `newborn(g)`, `weaning(mo)`, `wean mass(g)`, `mass(g)`, `litters/year`)
 skim(d)
 ```
 

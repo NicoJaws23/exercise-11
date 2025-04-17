@@ -27,8 +27,7 @@ d <- d |>
   mutate(`mass(g)` = log(`mass(g)`), `gestation(mo)` = log(`gestation(mo)`), 
          `newborn(g)` = log(`newborn(g)`), `weaning(mo)` = log(`weaning(mo)`),
          `wean mass(g)` = log(`wean mass(g)`), `AFR(mo)` = log(`AFR(mo)`),
-         `max. life(mo)` = log(`max. life(mo)`), `litters/year` = log(`litters/year`)) |>
-  drop_na(`gestation(mo)`, `weaning(mo)`, `AFR(mo)`, `max. life(mo)`, `newborn(g)`, `wean mass(g)`)
+         `max. life(mo)` = log(`max. life(mo)`), `litters/year` = log(`litters/year`))
 
 #Step 4, Regress values to get relative values
 #Age values
@@ -42,21 +41,21 @@ relNewbornMass <- lm(data = d, `newborn(g)` ~ `mass(g)`, na.action = na.exclude)
 relWeaningMass <- lm(data = d, `wean mass(g)` ~ `mass(g)`, na.action = na.exclude) #Weaning mass
 
 d <- d |>
-  mutate(relGest = relGest$residuals, relWean = relWean$residuals, relAFR = relAFR$residuals, 
-         relLife = relLife$residuals, relNewbornMass = relNewbornMass$residuals, relWeaningMass = relWeaningMass$residuals)
+  mutate(relGest = resid(relGest), relWean = resid(relWean), relAFR = resid(relAFR), 
+         relLife = resid(relLife), relNewbornMass = resid(relNewbornMass), relWeaningMass = resid(relWeaningMass))
 
 #Step 5, plotting residules
-lifeOrder <- ggplot(data = d, mapping = aes(x = order, y = relLife)) +
+lifeOrder <- ggplot(data = d |> drop_na(relLife), mapping = aes(x = order, y = relLife)) +
   geom_boxplot() +
   ggtitle("Order and Lifespan") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-newmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relNewbornMass)) +
+newmassOrder <- ggplot(data = d |> drop_na(relNewbornMass), mapping = aes(x = order, y = relNewbornMass)) +
   geom_boxplot() +
   ggtitle("Order and Newborn Mass(g)") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-weanmassOrder <- ggplot(data = d, mapping = aes(x = order, y = relWeaningMass)) +
+weanmassOrder <- ggplot(data = d |> drop_na(relWeaningMass), mapping = aes(x = order, y = relWeaningMass)) +
   geom_boxplot() +
   ggtitle("Order and Weaning Mass") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -65,7 +64,7 @@ plot_grid(lifeOrder, newmassOrder, weanmassOrder)
 
 #Step 6, model selection
 d <- d |>
-  drop_na(`litters/year`, `mass(g)`)
+  drop_na(`max. life(mo)`, `AFR(mo)`, `gestation(mo)`, `newborn(g)`, `weaning(mo)`, `wean mass(g)`, `mass(g)`, `litters/year`)
 
 #Max life(mo) models
 lifeFull <- lm(data = d, `max. life(mo)` ~ `gestation(mo)` + `newborn(g)` + 

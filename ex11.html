@@ -1212,23 +1212,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="step-4">Step 4</h2>
 <p>Now I need to get the relative values of gestation(mo), weaning(mo), AFR(mo), max. life(mo), newborn(g), and wean mass(g). I will do this by regressing each of these variables on mass(g) and use the residuals as the relative value. These values will then be added to the original data frame. First though I need to drop all the NA values so that the lm() function will work and I can smoothly add the residuals to the data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(<span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Age values</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>relGest <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>) <span class="co">#Gestation</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>relWean <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#weaning</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>relAFR <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#AFR</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>relLife <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Max life</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#Mass</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>relNewbornMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Newborn mass</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>relWeaningMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Weaning mass</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Adding to original data frame</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">relGest =</span> relGest<span class="sc">$</span>residuals, <span class="at">relWean =</span> relWean<span class="sc">$</span>residuals, <span class="at">relAFR =</span> relAFR<span class="sc">$</span>residuals, </span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">relLife =</span> relLife<span class="sc">$</span>residuals, <span class="at">relNewbornMass =</span> relNewbornMass<span class="sc">$</span>residuals, <span class="at">relWeaningMass =</span> relWeaningMass<span class="sc">$</span>residuals)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Age values</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>relGest <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Gestation</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>relWean <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#weaning</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>relAFR <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#AFR</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>relLife <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Max life</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Mass</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>relNewbornMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Newborn mass</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>relWeaningMass <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">data =</span> d, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span> <span class="sc">~</span> <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="at">na.action =</span> na.exclude) <span class="co">#Weaning mass</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">relGest =</span> <span class="fu">resid</span>(relGest), <span class="at">relWean =</span> <span class="fu">resid</span>(relWean), <span class="at">relAFR =</span> <span class="fu">resid</span>(relAFR), <span class="at">relLife =</span> <span class="fu">resid</span>(relLife), <span class="at">relNewbornMass =</span> <span class="fu">resid</span>(relNewbornMass), <span class="at">relWeaningMass =</span> <span class="fu">resid</span>(relWeaningMass))</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Data summary</caption>
@@ -1239,7 +1235,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td style="text-align: left;">Number of rows</td>
-<td style="text-align: left;">235</td>
+<td style="text-align: left;">1440</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Number of columns</td>
@@ -1303,7 +1299,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">7</td>
 <td style="text-align: right;">14</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">15</td>
+<td style="text-align: right;">17</td>
 <td style="text-align: right;">0</td>
 </tr>
 <tr class="even">
@@ -1313,7 +1309,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">15</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">62</td>
+<td style="text-align: right;">96</td>
 <td style="text-align: right;">0</td>
 </tr>
 <tr class="odd">
@@ -1323,7 +1319,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">3</td>
 <td style="text-align: right;">16</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">182</td>
+<td style="text-align: right;">618</td>
 <td style="text-align: right;">0</td>
 </tr>
 <tr class="even">
@@ -1331,9 +1327,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">16</td>
+<td style="text-align: right;">17</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">222</td>
+<td style="text-align: right;">1191</td>
 <td style="text-align: right;">0</td>
 </tr>
 </tbody>
@@ -1349,7 +1345,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <col style="width: 7%">
 <col style="width: 7%">
 <col style="width: 7%">
-<col style="width: 7%">
+<col style="width: 5%">
 <col style="width: 7%">
 <col style="width: 7%">
 </colgroup>
@@ -1371,184 +1367,184 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">mass(g)</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">7.72</td>
-<td style="text-align: right;">3.32</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">6.87</td>
+<td style="text-align: right;">3.24</td>
 <td style="text-align: right;">0.74</td>
-<td style="text-align: right;">4.89</td>
-<td style="text-align: right;">8.02</td>
-<td style="text-align: right;">10.62</td>
+<td style="text-align: right;">4.11</td>
+<td style="text-align: right;">6.41</td>
+<td style="text-align: right;">9.05</td>
 <td style="text-align: right;">18.82</td>
-<td style="text-align: left;">▅▆▇▂▁</td>
+<td style="text-align: left;">▆▇▆▂▁</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">gestation(mo)</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">0.97</td>
-<td style="text-align: right;">0.95</td>
-<td style="text-align: right;">-0.62</td>
-<td style="text-align: right;">0.05</td>
-<td style="text-align: right;">0.93</td>
-<td style="text-align: right;">1.84</td>
+<td style="text-align: right;">418</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">0.90</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">-0.71</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">1.79</td>
 <td style="text-align: right;">3.07</td>
 <td style="text-align: left;">▇▆▃▇▂</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">newborn(g)</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">4.62</td>
-<td style="text-align: right;">3.21</td>
+<td style="text-align: right;">595</td>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">4.27</td>
+<td style="text-align: right;">3.17</td>
 <td style="text-align: right;">-1.56</td>
-<td style="text-align: right;">1.83</td>
-<td style="text-align: right;">4.55</td>
-<td style="text-align: right;">6.84</td>
+<td style="text-align: right;">1.48</td>
+<td style="text-align: right;">3.78</td>
+<td style="text-align: right;">6.30</td>
 <td style="text-align: right;">14.63</td>
-<td style="text-align: left;">▆▇▆▅▁</td>
+<td style="text-align: left;">▇▇▆▃▁</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">weaning(mo)</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">0.83</td>
-<td style="text-align: right;">1.07</td>
+<td style="text-align: right;">619</td>
+<td style="text-align: right;">0.57</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">1.04</td>
 <td style="text-align: right;">-1.20</td>
-<td style="text-align: right;">-0.09</td>
-<td style="text-align: right;">0.58</td>
-<td style="text-align: right;">1.69</td>
-<td style="text-align: right;">3.67</td>
+<td style="text-align: right;">-0.08</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">1.58</td>
+<td style="text-align: right;">3.87</td>
 <td style="text-align: left;">▃▇▅▃▁</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">wean mass(g)</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">6.47</td>
-<td style="text-align: right;">3.17</td>
+<td style="text-align: right;">1039</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">5.50</td>
+<td style="text-align: right;">3.00</td>
 <td style="text-align: right;">0.74</td>
-<td style="text-align: right;">3.67</td>
-<td style="text-align: right;">6.43</td>
-<td style="text-align: right;">9.06</td>
+<td style="text-align: right;">3.00</td>
+<td style="text-align: right;">4.63</td>
+<td style="text-align: right;">7.60</td>
 <td style="text-align: right;">16.76</td>
-<td style="text-align: left;">▇▇▇▃▁</td>
+<td style="text-align: left;">▇▅▅▁▁</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">AFR(mo)</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">2.58</td>
-<td style="text-align: right;">1.18</td>
-<td style="text-align: right;">-0.06</td>
-<td style="text-align: right;">1.66</td>
-<td style="text-align: right;">2.66</td>
-<td style="text-align: right;">3.55</td>
-<td style="text-align: right;">4.99</td>
-<td style="text-align: left;">▃▃▇▇▂</td>
+<td style="text-align: right;">607</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">2.47</td>
+<td style="text-align: right;">1.21</td>
+<td style="text-align: right;">-0.36</td>
+<td style="text-align: right;">1.50</td>
+<td style="text-align: right;">2.48</td>
+<td style="text-align: right;">3.34</td>
+<td style="text-align: right;">5.35</td>
+<td style="text-align: left;">▂▅▇▇▂</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">max. life(mo)</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">5.01</td>
+<td style="text-align: right;">841</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">5.06</td>
 <td style="text-align: right;">0.92</td>
 <td style="text-align: right;">2.48</td>
-<td style="text-align: right;">4.28</td>
-<td style="text-align: right;">5.23</td>
-<td style="text-align: right;">5.70</td>
-<td style="text-align: right;">7.19</td>
-<td style="text-align: left;">▁▅▅▇▁</td>
+<td style="text-align: right;">4.43</td>
+<td style="text-align: right;">5.26</td>
+<td style="text-align: right;">5.66</td>
+<td style="text-align: right;">7.22</td>
+<td style="text-align: left;">▁▃▆▇▁</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">litters/year</td>
-<td style="text-align: right;">29</td>
-<td style="text-align: right;">0.88</td>
-<td style="text-align: right;">0.20</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">-1.61</td>
-<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">689</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">-1.97</td>
+<td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.69</td>
-<td style="text-align: right;">1.70</td>
-<td style="text-align: left;">▁▃▇▅▃</td>
+<td style="text-align: right;">2.01</td>
+<td style="text-align: left;">▁▂▇▅▂</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">relGest</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">449</td>
+<td style="text-align: right;">0.69</td>
 <td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.50</td>
-<td style="text-align: right;">-1.32</td>
-<td style="text-align: right;">-0.37</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.35</td>
-<td style="text-align: right;">1.30</td>
-<td style="text-align: left;">▁▆▇▅▂</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">-1.39</td>
+<td style="text-align: right;">-0.34</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.33</td>
+<td style="text-align: right;">1.57</td>
+<td style="text-align: left;">▁▅▇▃▁</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">relWean</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">638</td>
+<td style="text-align: right;">0.56</td>
 <td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.82</td>
-<td style="text-align: right;">-2.98</td>
-<td style="text-align: right;">-0.43</td>
-<td style="text-align: right;">-0.07</td>
-<td style="text-align: right;">0.42</td>
-<td style="text-align: right;">2.19</td>
-<td style="text-align: left;">▁▁▇▅▂</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">-3.11</td>
+<td style="text-align: right;">-0.38</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">0.33</td>
+<td style="text-align: right;">2.30</td>
+<td style="text-align: left;">▁▁▇▃▁</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">relAFR</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">623</td>
+<td style="text-align: right;">0.57</td>
 <td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.75</td>
-<td style="text-align: right;">-1.97</td>
-<td style="text-align: right;">-0.54</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.56</td>
-<td style="text-align: right;">1.84</td>
-<td style="text-align: left;">▂▆▇▇▂</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">-2.09</td>
+<td style="text-align: right;">-0.55</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">1.89</td>
+<td style="text-align: left;">▁▅▇▅▂</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">relLife</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">848</td>
+<td style="text-align: right;">0.41</td>
 <td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.54</td>
-<td style="text-align: right;">-1.51</td>
-<td style="text-align: right;">-0.32</td>
-<td style="text-align: right;">-0.02</td>
-<td style="text-align: right;">0.34</td>
-<td style="text-align: right;">1.45</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">-1.50</td>
+<td style="text-align: right;">-0.31</td>
+<td style="text-align: right;">-0.03</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">1.49</td>
 <td style="text-align: left;">▁▃▇▃▁</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">relNewbornMass</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">624</td>
+<td style="text-align: right;">0.57</td>
 <td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.80</td>
-<td style="text-align: right;">-3.59</td>
-<td style="text-align: right;">-0.44</td>
-<td style="text-align: right;">0.08</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">1.74</td>
-<td style="text-align: left;">▁▁▃▇▃</td>
+<td style="text-align: right;">0.73</td>
+<td style="text-align: right;">-3.72</td>
+<td style="text-align: right;">-0.42</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">2.11</td>
+<td style="text-align: left;">▁▁▃▇▁</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">relWeaningMass</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1044</td>
+<td style="text-align: right;">0.28</td>
 <td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.55</td>
-<td style="text-align: right;">-1.96</td>
-<td style="text-align: right;">-0.33</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">1.27</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">-1.94</td>
+<td style="text-align: right;">-0.31</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.34</td>
+<td style="text-align: right;">1.29</td>
 <td style="text-align: left;">▁▂▇▇▂</td>
 </tr>
 </tbody>
@@ -1558,19 +1554,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="step-5" class="level2">
 <h2 class="anchored" data-anchor-id="step-5">Step 5</h2>
-<p>Now I will create boxplots which will plot relative max lifespan, relative newborn mass, and relative weaning mass in relation to order. Based on the graphs, primates have the highest residual lifespan, cetacea has the highest residual newborn mass, and perissodactyla has the highest residual weaning mass.</p>
+<p>Now I will create boxplots which will plot relative max lifespan, relative newborn mass, and relative weaning mass in relation to order. Based on the graphs, primates have the highest residual lifespan with xenarthra being a close second, cetacea has the highest residual newborn mass with macroscelidea being at a similar level, and perissodactyla has the highest residual weaning mass with cetacea having the second highest value.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lifeOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relLife)) <span class="sc">+</span></span>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lifeOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(relLife), <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relLife)) <span class="sc">+</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Lifespan"</span>) <span class="sc">+</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>newmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relNewbornMass)) <span class="sc">+</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>newmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(relNewbornMass), <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relNewbornMass)) <span class="sc">+</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Newborn Mass(g)"</span>) <span class="sc">+</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>weanmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relWeaningMass)) <span class="sc">+</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>weanmassOrder <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(relWeaningMass), <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> order, <span class="at">y =</span> relWeaningMass)) <span class="sc">+</span></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Order and Weaning Mass"</span>) <span class="sc">+</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
@@ -1590,7 +1586,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Now we will run two full models and run a model selection process to determine which variables are the best predictors of the response variables. The first model will be (max. life(mo) ~ gestation(mo) + newborn(g) + weaning(mo) + wean mass(g) + litters/year + mass(g)) and the second model will be (AFR(mo) ~ gestation(mo) + newborn(g) + weaning(mo) + wean mass(g) + litters/year + mass(g)). I will use the stepAIC() function from {MASS} and the dredge() function from {MuMIn} to conduct and visualize the model selection. First, I will drop NA values from the remaining variables which have not had them dropped yet (litters/year and mass(g))</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> d <span class="sc">|&gt;</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(<span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>, <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>(<span class="st">`</span><span class="at">max. life(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">AFR(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">gestation(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">newborn(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">weaning(mo)</span><span class="st">`</span>, <span class="st">`</span><span class="at">wean mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">mass(g)</span><span class="st">`</span>, <span class="st">`</span><span class="at">litters/year</span><span class="st">`</span>)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -1840,65 +1836,65 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">relGest</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">-0.03</td>
 <td style="text-align: right;">0.51</td>
-<td style="text-align: right;">-1.32</td>
+<td style="text-align: right;">-1.39</td>
 <td style="text-align: right;">-0.40</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">0.36</td>
-<td style="text-align: right;">1.30</td>
-<td style="text-align: left;">▁▆▇▆▂</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">1.29</td>
+<td style="text-align: left;">▁▆▇▆▁</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">relWean</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">-0.01</td>
 <td style="text-align: right;">0.84</td>
-<td style="text-align: right;">-2.98</td>
-<td style="text-align: right;">-0.42</td>
-<td style="text-align: right;">-0.05</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">2.19</td>
+<td style="text-align: right;">-3.11</td>
+<td style="text-align: right;">-0.48</td>
+<td style="text-align: right;">-0.06</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">2.10</td>
 <td style="text-align: left;">▁▁▇▅▂</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">relAFR</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.08</td>
 <td style="text-align: right;">0.75</td>
-<td style="text-align: right;">-1.97</td>
-<td style="text-align: right;">-0.53</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.63</td>
-<td style="text-align: right;">1.84</td>
+<td style="text-align: right;">-1.91</td>
+<td style="text-align: right;">-0.47</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">1.89</td>
 <td style="text-align: left;">▂▆▇▇▂</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">relLife</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.05</td>
 <td style="text-align: right;">0.54</td>
-<td style="text-align: right;">-1.51</td>
-<td style="text-align: right;">-0.32</td>
-<td style="text-align: right;">-0.02</td>
-<td style="text-align: right;">0.35</td>
-<td style="text-align: right;">1.45</td>
-<td style="text-align: left;">▁▃▇▅▂</td>
+<td style="text-align: right;">-1.50</td>
+<td style="text-align: right;">-0.27</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">1.49</td>
+<td style="text-align: left;">▁▃▇▅▁</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">relNewbornMass</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">-0.11</td>
 <td style="text-align: right;">0.82</td>
-<td style="text-align: right;">-3.59</td>
-<td style="text-align: right;">-0.46</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">1.74</td>
+<td style="text-align: right;">-3.72</td>
+<td style="text-align: right;">-0.55</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">1.62</td>
 <td style="text-align: left;">▁▁▃▇▃</td>
 </tr>
 <tr class="even">
@@ -1907,11 +1903,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">1</td>
 <td style="text-align: right;">-0.01</td>
 <td style="text-align: right;">0.56</td>
-<td style="text-align: right;">-1.96</td>
+<td style="text-align: right;">-1.94</td>
 <td style="text-align: right;">-0.33</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">1.27</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">1.29</td>
 <td style="text-align: left;">▁▂▇▇▂</td>
 </tr>
 </tbody>
